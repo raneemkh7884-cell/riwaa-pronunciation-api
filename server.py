@@ -84,10 +84,13 @@ def check_pronunciation():
 
         phoneme_scores = []
         all_good = True
+        has_any_phoneme = False
 
         for word in words:
             phonemes = word.get("Phonemes", [])
             for p in phonemes:
+                has_any_phoneme = True
+
                 phoneme = p.get("Phoneme", "")
                 score = p.get("PronunciationAssessment", {}).get("AccuracyScore", 0)
 
@@ -99,15 +102,22 @@ def check_pronunciation():
                 if score < 90:
                     all_good = False
 
+        recognized_text = result.text.strip() if result.text else ""
+
+        if recognized_text != reference_text:
+            all_good = False
+
+        is_correct = has_any_phoneme and all_good
+
         return jsonify({
             "success": True,
-            "recognized_text": result.text,
+            "recognized_text": recognized_text,
             "accuracy": pa.get("AccuracyScore", 0),
             "fluency": pa.get("FluencyScore", 0),
             "completeness": pa.get("CompletenessScore", 0),
             "pron_score": pa.get("PronScore", 0),
             "phonemes": phoneme_scores,
-            "is_correct": all_good
+            "is_correct": is_correct
         })
 
     except Exception as e:
