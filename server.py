@@ -99,13 +99,11 @@ def check_pronunciation():
                     "score": score
                 })
 
-                if score < 90:
+                if score < 80:
                     all_good = False
 
-        recognized_text = result.text.strip() if result.text else ""
-
-        if recognized_text != reference_text:
-            all_good = False
+                recognized_text = result.text.strip() if result.text else ""
+                is_correct = has_any_phoneme and all_good
 
         is_correct = has_any_phoneme and all_good
 
