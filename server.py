@@ -12,6 +12,7 @@ REGION = os.environ.get("REGION")
 @app.route("/check-pronunciation", methods=["POST"])
 def check_pronunciation():
     temp_filename = None
+    recognized_text = ""
 
     try:
         if not SPEECH_KEY or not REGION:
@@ -86,6 +87,9 @@ def check_pronunciation():
         all_good = True
         has_any_phoneme = False
 
+        # خلي recognized_text خارج اللوب
+        recognized_text = result.text.strip() if result.text else ""
+
         for word in words:
             phonemes = word.get("Phonemes", [])
             for p in phonemes:
@@ -102,9 +106,6 @@ def check_pronunciation():
                 if score < 80:
                     all_good = False
 
-                recognized_text = result.text.strip() if result.text else ""
-                is_correct = has_any_phoneme and all_good
-
         is_correct = has_any_phoneme and all_good
 
         return jsonify({
@@ -119,7 +120,11 @@ def check_pronunciation():
         })
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "recognized_text": recognized_text
+        }), 500
 
     finally:
         if temp_filename and os.path.exists(temp_filename):
